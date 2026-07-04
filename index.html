@@ -534,9 +534,9 @@ body.light-mode .detail-value{
 .alloc-detail-item .detail-pct{font-family:"SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, monospace;font-size:12px;min-width:52px;text-align:right;color:var(--gold);}
 
 /* --- charts --- */
-.charts-grid{display:grid;grid-template-columns:1fr;gap:22px;}
+.charts-grid{display:grid;grid-template-columns:1fr;gap:12px;}
 
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:20px;position:relative;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:16px;position:relative;}
 .chart-card h3{font-family:Georgia, "Times New Roman", serif;font-weight:500;font-size:16px;margin:0 0 14px;}
 
 #pieTooltip{
@@ -893,6 +893,60 @@ body.light-mode .detail-value{
       </div>
     </div>
 
+    <!-- MODAL MODIFICA COLORI -->
+    <div class="snapshot-modal" id="editColorsModal">
+      <div class="snapshot-modal-content" style="max-width:500px;">
+        <h3 id="editColorsTitle">Modifica Palette Colori</h3>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:20px;">Scegli una palette per il grafico a torta:</p>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+          <button class="color-preset" data-preset="default" style="padding:12px;border:2px solid var(--gold);border-radius:8px;background:var(--surface);cursor:pointer;transition:0.2s;">
+            <div style="display:flex;gap:4px;margin-bottom:8px;">
+              <div style="flex:1;height:20px;background:#FF5252;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#2196F3;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#4CAF50;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#FFC107;border-radius:4px;"></div>
+            </div>
+            <div style="font-size:12px;font-weight:600;">Vivaci</div>
+          </button>
+          
+          <button class="color-preset" data-preset="pastel" style="padding:12px;border:2px solid transparent;border-radius:8px;background:var(--surface);cursor:pointer;transition:0.2s;">
+            <div style="display:flex;gap:4px;margin-bottom:8px;">
+              <div style="flex:1;height:20px;background:#FFB6C1;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#87CEEB;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#98D98E;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#FFE4B5;border-radius:4px;"></div>
+            </div>
+            <div style="font-size:12px;font-weight:600;">Pastello</div>
+          </button>
+          
+          <button class="color-preset" data-preset="neon" style="padding:12px;border:2px solid transparent;border-radius:8px;background:var(--surface);cursor:pointer;transition:0.2s;">
+            <div style="display:flex;gap:4px;margin-bottom:8px;">
+              <div style="flex:1;height:20px;background:#FF006E;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#00D9FF;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#00FF88;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#FFBE0B;border-radius:4px;"></div>
+            </div>
+            <div style="font-size:12px;font-weight:600;">Neon</div>
+          </button>
+          
+          <button class="color-preset" data-preset="earth" style="padding:12px;border:2px solid transparent;border-radius:8px;background:var(--surface);cursor:pointer;transition:0.2s;">
+            <div style="display:flex;gap:4px;margin-bottom:8px;">
+              <div style="flex:1;height:20px;background:#8B4513;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#CD853F;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#90EE90;border-radius:4px;"></div>
+              <div style="flex:1;height:20px;background:#DAA520;border-radius:4px;"></div>
+            </div>
+            <div style="font-size:12px;font-weight:600;">Naturale</div>
+          </button>
+        </div>
+        
+        <div class="snapshot-modal-btn">
+          <button class="btn secondary" onclick="document.getElementById('editColorsModal').classList.remove('active')">Chiudi</button>
+        </div>
+      </div>
+    </div>
+
     <div class="snapshot-modal" id="settingsModal">
       <div class="snapshot-modal-content" style="max-width:450px;max-height:80vh;overflow-y:auto;">
         <h3>Impostazioni</h3>
@@ -934,13 +988,16 @@ body.light-mode .detail-value{
       <div class="charts-grid">
         <div class="chart-card">
           <h3 style="display:flex;justify-content:space-between;align-items:center;">
-            Allocazione per categoria
+            <div style="display:flex;gap:12px;align-items:center;">
+              Allocazione per categoria
+              <button id="editColorsBtn" style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px 8px;color:var(--text-dim);transition:0.2s;border-radius:4px;" title="Modifica colori" onmouseover="this.style.background='var(--surface-alt)'" onmouseout="this.style.background='none'">✏️</button>
+            </div>
             <label style="font-size:12px;font-weight:400;display:flex;gap:8px;align-items:center;cursor:pointer;">
               <input type="checkbox" id="includeCashInAllocation" checked style="cursor:pointer;width:16px;height:16px;">
               <span id="includeCashLabel">Includi liquidità</span>
             </label>
           </h3>
-          <canvas id="allocationChart" height="380"></canvas>
+          <canvas id="allocationChart" height="500"></canvas>
           <div id="pieTooltip"></div>
         </div>
         <div class="chart-card">
@@ -2325,7 +2382,14 @@ body.light-mode .detail-value{
     'IE00B4ND3602': 'EULA.DE'   // iShares Physical Gold - Xetra
   };
 
-  const PALETTE = ['#FF6B6B','#4ECDC4','#FFE66D','#95E1D3','#F38181','#AA96DA','#FCBAD3','#A8D8EA','#FF9671','#73C6B6'];
+  const PALETTES = {
+    default: ['#FF5252','#2196F3','#4CAF50','#FFC107','#9C27B0','#FF9800','#00BCD4','#E91E63'],
+    pastel: ['#FFB6C1','#87CEEB','#98D98E','#FFE4B5','#DDA0DD','#F0E68C','#B0E0E6','#FFB6C1'],
+    neon: ['#FF006E','#00D9FF','#00FF88','#FFBE0B','#FB5607','#FF006E','#8338EC','#FFBE0B'],
+    earth: ['#8B4513','#CD853F','#90EE90','#DAA520','#D2B48C','#6B8E23','#BC8F8F','#A0826D']
+  };
+  let currentPaletteKey = 'default';
+  const PALETTE = PALETTES[currentPaletteKey];
 
   let pieSlices = []; // Array per memorizzare i dati di ogni fetta
 
@@ -2468,7 +2532,7 @@ body.light-mode .detail-value{
     const catColor = {};
     categories.forEach((c,i)=>{ 
       const cashLabel = currentLanguage === 'EN' ? 'Cash' : 'Liquidità';
-      catColor[c] = c===cashLabel ? '#00D9FF' : (c==='MSCI World' ? '#00FF88' : PALETTE[(i+1) % PALETTE.length]); 
+      catColor[c] = c===cashLabel ? '#00D9FF' : (c==='MSCI World' ? '#00FF88' : PALETTES[currentPaletteKey][(i+1) % PALETTES[currentPaletteKey].length]); 
     });
 
     try{
@@ -2872,6 +2936,11 @@ body.light-mode .detail-value{
       btnEdit: 'Modifica',
       btnDelete: 'Elimina',
       includeCashLabel: 'Includi liquidità',
+      editColorsTitle: 'Modifica Palette Colori',
+      editColorsVivaci: 'Vivaci',
+      editColorsPastel: 'Pastello',
+      editColorsNeon: 'Neon',
+      editColorsEarth: 'Naturale',
       // Forms
       formBroker: 'Conto / Broker',
       formAllocation: 'Allocazione',
@@ -3077,6 +3146,11 @@ body.light-mode .detail-value{
       btnEdit: 'Edit',
       btnDelete: 'Delete',
       includeCashLabel: 'Include cash',
+      editColorsTitle: 'Edit Color Palette',
+      editColorsVivaci: 'Vibrant',
+      editColorsPastel: 'Pastel',
+      editColorsNeon: 'Neon',
+      editColorsEarth: 'Natural',
       // Forms
       formBroker: 'Account / Broker',
       formAllocation: 'Allocation',
@@ -4174,6 +4248,46 @@ body.light-mode .detail-value{
       renderAllocation();
     });
   }
+  
+  // Listener per il bottone di modifica colori
+  const editColorsBtn = document.getElementById('editColorsBtn');
+  if(editColorsBtn){
+    editColorsBtn.addEventListener('click', ()=>{
+      document.getElementById('editColorsModal').classList.add('active');
+    });
+  }
+  
+  // Listener per la selezione della palette
+  const colorPresets = document.querySelectorAll('.color-preset');
+  colorPresets.forEach(btn => {
+    btn.addEventListener('click', ()=>{
+      const preset = btn.dataset.preset;
+      currentPaletteKey = preset;
+      
+      // Aggiorna border sui bottoni
+      colorPresets.forEach(b => b.style.borderColor = 'transparent');
+      btn.style.borderColor = 'var(--gold)';
+      
+      // Salva in localStorage
+      try{
+        localStorage.setItem('selectedPalette', preset);
+      }catch(e){}
+      
+      // Rerender
+      renderAllocation();
+      
+      // Chiudi il modal
+      document.getElementById('editColorsModal').classList.remove('active');
+    });
+  });
+  
+  // Carica la palette salvata
+  try{
+    const savedPalette = localStorage.getItem('selectedPalette');
+    if(savedPalette && PALETTES[savedPalette]){
+      currentPaletteKey = savedPalette;
+    }
+  }catch(e){}
 })();
 </script>
 
