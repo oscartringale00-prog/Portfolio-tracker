@@ -1049,13 +1049,7 @@ body.light-mode .detail-value{
   // Import iniziale dall'estratto Trade Republic caricato dall'utente (02.07.2026).
   // Prezzo di carico non disponibile nell'estratto: impostato uguale al prezzo attuale.
   // Modificabile in qualsiasi momento dalla scheda "Modifica".
-  const SEED_HOLDINGS = [
-    {id:'h_seed_1', name:'Core MSCI World USD (Acc)', symbol:'IE000BI8OT95', type:'etf', quantity:29.15752, avgPrice:122.87, currentPrice:157.14, lastUpdated:Date.now(), coingeckoId:null, broker:'Trade Republic', category:'MSCI World'},
-    {id:'h_seed_2', name:'Core MSCI EM IMI USD (Acc)', symbol:'IE00BKM4GZ66', type:'etf', quantity:26.928314, avgPrice:32.68, currentPrice:47.23, lastUpdated:Date.now(), coingeckoId:null, broker:'Trade Republic', category:'MSCI EM IMI'},
-    {id:'h_seed_3', name:'NASDAQ100 USD (Acc)', symbol:'IE00B53SZB19', type:'etf', quantity:1.075519, avgPrice:1265.44, currentPrice:1490.00, lastUpdated:Date.now(), coingeckoId:null, broker:'Trade Republic', category:'NASDAQ 100'},
-    {id:'h_seed_4', name:'Core MSCI World USD (Acc)', symbol:'IE00B4L5Y983', type:'etf', quantity:68.581938, avgPrice:111.76, currentPrice:125.16, lastUpdated:Date.now(), coingeckoId:null, broker:'Trade Republic', category:'MSCI World'},
-    {id:'h_seed_5', name:'Physical Gold USD (Acc)', symbol:'IE00B4ND3602', type:'altro', quantity:28.188243, avgPrice:70.57, currentPrice:69.12, lastUpdated:Date.now(), coingeckoId:null, broker:'Trade Republic', category:'Oro'}
-  ];
+  const SEED_HOLDINGS = [];
   const DEFAULT_BROKERS = ['Trade Republic'];
   const CATEGORY_PATCH_KEY = 'category-patch-v1';
   const CATEGORY_PATCH = {
@@ -1106,9 +1100,7 @@ body.light-mode .detail-value{
     try{ await window.storage.set(DIVIDEND_PATCH_KEY, '1', false); }catch(e){}
   }
 
-  const SEED_CASH = [
-    {id:'c_seed_1', name:'Trade Republic — Conto corrente', amount:1887.04}
-  ];
+  const SEED_CASH = [];
   const PATCH_KEY = 'avgprice-patch-v1';
   const AVG_PRICE_PATCH = {
     'IE000BI8OT95': 122.87,  // Amundi Core MSCI World
@@ -1960,9 +1952,9 @@ body.light-mode .detail-value{
 
   function renderStats(){
     const s = computeStats();
-    const patrimony = s.total + s.cash;
+    const patrimony = s.total;  // patrimony = valore investimenti + liquidità (s.total = value + cash)
     document.getElementById('statPatrimony').textContent = eurWhole(patrimony);
-    document.getElementById('statValue').textContent = eurWhole(s.total);
+    document.getElementById('statValue').textContent = eurWhole(s.value);
     document.getElementById('statInvested').textContent = eurWhole(s.invested);
     const gainEl = document.getElementById('statGain');
     gainEl.textContent = (s.gain>=0?'+':'') + eurWhole(s.gain);
