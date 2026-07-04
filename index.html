@@ -929,7 +929,13 @@ body.light-mode .detail-value{
     <div class="tab-panel" id="panel-allocation">
       <div class="charts-grid">
         <div class="chart-card">
-          <h3>Allocazione per categoria</h3>
+          <h3 style="display:flex;justify-content:space-between;align-items:center;">
+            Allocazione per categoria
+            <label style="font-size:12px;font-weight:400;display:flex;gap:8px;align-items:center;cursor:pointer;">
+              <input type="checkbox" id="includeCashInAllocation" checked style="cursor:pointer;width:16px;height:16px;">
+              <span id="includeCashLabel">Includi liquidità</span>
+            </label>
+          </h3>
           <canvas id="allocationChart" height="260"></canvas>
           <div id="pieTooltip"></div>
         </div>
@@ -1045,6 +1051,7 @@ body.light-mode .detail-value{
   let sortKeyReturns = 'date';
   let sortDirReturns = 'desc';
   let currentCurrency = 'EUR';
+  let includeCashInAllocation = true;  // Per il grafico dell'allocazione
 
   // Import iniziale dall'estratto Trade Republic caricato dall'utente (02.07.2026).
   // Prezzo di carico non disponibile nell'estratto: impostato uguale al prezzo attuale.
@@ -2435,7 +2442,10 @@ body.light-mode .detail-value{
       const cat = h.category || h.name;
       byCat[cat] = (byCat[cat]||0) + val;
     });
-    if(cashTotal > 0){ byCat['Liquidità'] = (byCat['Liquidità']||0) + cashTotal; }
+    // Aggiungi liquidità solo se il checkbox è checked
+    if(includeCashInAllocation && cashTotal > 0){ 
+      byCat[currentLanguage === 'EN' ? 'Cash' : 'Liquidità'] = (byCat[currentLanguage === 'EN' ? 'Cash' : 'Liquidità']||0) + cashTotal; 
+    }
 
     // Unisci tutte le categorie che contengono "world" in un'unica categoria "MSCI World"
     const mergedByCat = {};
@@ -2446,7 +2456,10 @@ body.light-mode .detail-value{
 
     const categories = Object.keys(mergedByCat);
     const catColor = {};
-    categories.forEach((c,i)=>{ catColor[c] = c==='Liquidità' ? '#4FA3C4' : (c==='MSCI World' ? '#3498DB' : PALETTE[(i+1) % PALETTE.length]); });
+    categories.forEach((c,i)=>{ 
+      const cashLabel = currentLanguage === 'EN' ? 'Cash' : 'Liquidità';
+      catColor[c] = c===cashLabel ? '#4FA3C4' : (c==='MSCI World' ? '#3498DB' : PALETTE[(i+1) % PALETTE.length]); 
+    });
 
     try{
       drawPieChart('allocationChart', categories, categories.map(c=>mergedByCat[c]), categories.map(c=>catColor[c]));
@@ -2456,9 +2469,13 @@ body.light-mode .detail-value{
     if(!listWrap) return;
 
     if(categories.length === 0){
-      listWrap.innerHTML = `<div class="empty"><h3>Nessun dato ancora</h3><p>Aggiungi investimenti o liquidità per vedere l'allocazione.</p></div>`;
+      listWrap.innerHTML = `<div class="empty"><h3>${t('noData')}</h3><p>${t('addInvestmentsOrCash')}</p></div>`;
       return;
     }
+
+    // Calcola il total in base a includeCashInAllocation
+    let allocTotal = 0;
+    Object.values(mergedByCat).forEach(val => { allocTotal += val; });
 
     // Crea mappa di strumenti per categoria, mantenendo i dati completi
     const membersByCat = {};
@@ -2478,7 +2495,7 @@ body.light-mode .detail-value{
       .sort((a,b)=>b.val-a.val);
 
     listWrap.innerHTML = rows.map((r, idx)=>{
-      const pct = total>0 ? (r.val/total*100) : 0;
+      const pct = allocTotal>0 ? (r.val/allocTotal*100) : 0;
       const members = membersByCat[r.cat] || [];
       const uniqueId = 'alloc-' + idx;
       
@@ -2490,10 +2507,11 @@ body.light-mode .detail-value{
         <span class="alloc-pct">${pct.toFixed(1)}%</span>
       </div>`;
       
-      if(r.cat !== 'Liquidità' && members.length > 0){
+      const cashLabel = currentLanguage === 'EN' ? 'Cash' : 'Liquidità';
+      if(r.cat !== cashLabel && members.length > 0){
         html += `<div class="alloc-details" data-alloc-id="${uniqueId}">`;
         members.forEach(member => {
-          const memberPct = total > 0 ? (member.value/total*100) : 0;
+          const memberPct = allocTotal > 0 ? (member.value/allocTotal*100) : 0;
           html += `<div class="alloc-detail-item">
             <span class="detail-name">${member.name}</span>
             <span class="detail-value">${eur(member.value)}</span>
@@ -2843,6 +2861,7 @@ body.light-mode .detail-value{
       btnRefresh: '↻ Aggiorna',
       btnEdit: 'Modifica',
       btnDelete: 'Elimina',
+      includeCashLabel: 'Includi liquidità',
       // Forms
       formBroker: 'Conto / Broker',
       formAllocation: 'Allocazione',
@@ -3047,6 +3066,7 @@ body.light-mode .detail-value{
       btnRefresh: '↻ Refresh',
       btnEdit: 'Edit',
       btnDelete: 'Delete',
+      includeCashLabel: 'Include cash',
       // Forms
       formBroker: 'Account / Broker',
       formAllocation: 'Allocation',
@@ -3588,8 +3608,23 @@ body.light-mode .detail-value{
     // Update chart titles in allocation section
     const chartTitles = document.querySelectorAll('.chart-card h3');
     if(chartTitles.length >= 2) {
-      chartTitles[0].textContent = t('chartAllocationTitle');
+      chartTitles[0].innerHTML = `<span style="display:flex;justify-content:space-between;align-items:center;">
+        ${t('chartAllocationTitle')}
+        <label style="font-size:12px;font-weight:400;display:flex;gap:8px;align-items:center;cursor:pointer;">
+          <input type="checkbox" id="includeCashInAllocation" ${includeCashInAllocation ? 'checked' : ''} style="cursor:pointer;width:16px;height:16px;">
+          <span id="includeCashLabel">${t('includeCashLabel')}</span>
+        </label>
+      </span>`;
       chartTitles[1].textContent = t('chartDetailTitle');
+      
+      // Re-add listener dopo il refresh del DOM
+      const newCheckbox = document.getElementById('includeCashInAllocation');
+      if(newCheckbox){
+        newCheckbox.addEventListener('change', (e)=>{
+          includeCashInAllocation = e.target.checked;
+          renderAllocation();
+        });
+      }
     }
     
     // Translate settings modal
@@ -4120,6 +4155,15 @@ body.light-mode .detail-value{
   document.getElementById('themeDarkToggle').addEventListener('change', ()=>{
     window.__toggleTheme();
   });
+  
+  // Event listener per il checkbox di inclusione liquidità nell'allocazione
+  const includeCashCheckbox = document.getElementById('includeCashInAllocation');
+  if(includeCashCheckbox){
+    includeCashCheckbox.addEventListener('change', (e)=>{
+      includeCashInAllocation = e.target.checked;
+      renderAllocation();
+    });
+  }
 })();
 </script>
 
